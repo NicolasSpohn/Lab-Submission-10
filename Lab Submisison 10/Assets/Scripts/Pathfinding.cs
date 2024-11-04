@@ -6,7 +6,6 @@ public class Pathfinding : MonoBehaviour
     [Header("Generate Random Grid Parameters")]
     public int width;
     public int height;
-    public float obstacleProbability;
 
     private List<Vector2Int> path = new List<Vector2Int>();
     [Header("Set Start and End Goals")]
@@ -14,6 +13,11 @@ public class Pathfinding : MonoBehaviour
     [SerializeField] private Vector2Int goal = new Vector2Int(4, 4);
     private Vector2Int next;
     private Vector2Int current;
+
+    public float obstacleProb = 20f;
+    private float obstacleChanged;
+
+    public Vector2Int obstacleLoc; 
 
     private Vector2Int[] directions = new Vector2Int[]
     {
@@ -35,6 +39,15 @@ public class Pathfinding : MonoBehaviour
     private void Start()
     {
         FindPath(start, goal);
+    }
+
+    private void OnValidate()
+    {
+        if (obstacleChanged != obstacleProb)
+        {
+            obstacleChanged = obstacleProb;
+            GenerateRandomGrid(grid.GetLength(0), grid.GetLength(1), obstacleProb);
+        }
     }
 
     private void OnDrawGizmos()
@@ -119,13 +132,34 @@ public class Pathfinding : MonoBehaviour
         path.Reverse();
     }
 
-    private void GenerateRandomGrid(int width, int height, float obstacleProbability)
+    private void GenerateRandomGrid(int height, int width, float obstacleProbability)
     {
-        
+        grid = new int[height, width];
+
+        for (int y = 0; y < grid.GetLength(0); y++)
+        {
+            for (int x = 0; x < grid.GetLength(1); x++)
+            {
+                if (x == start.x && y == start.y || x == goal.x && y == goal.y)
+                {
+                    grid[y, x] = 0;
+                    continue;
+                }
+
+                grid[y, x] = obstacleProbability > Random.Range(1, 100) ? 1 : 0;
+            }
+        }
     }
 
-    /*public AddObstacle(Vector2Int position)
+    private void AddObstacle(Vector2Int position)
     {
-
-    }*/
+        if (position.x == start.x && position.y == start.y || position.x == goal.x && position.y == goal.y)
+        {
+            grid[position.y, position.x] = 0;
+        }
+        else
+        {
+            grid[position.y, position.x] = 1;
+        }
+    }
 }
